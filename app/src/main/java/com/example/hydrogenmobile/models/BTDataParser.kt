@@ -4,6 +4,7 @@ import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.experimental.xor
 
 object BTDataParser {
 
@@ -18,7 +19,7 @@ object BTDataParser {
 
         if (indexArray[0] == PROTOCOL_ERROR && indexArray[1] != PROTOCOL_ERROR)
         {
-            Log.e("BTDataParser", "Invalid Data Length... Clear Buffer")
+            Log.e("BTDataParser", "Data Crashed CRC or Length invalid... Clear Buffer")
             return indexArray
         }
 
@@ -47,20 +48,27 @@ object BTDataParser {
         if ( headerIndex != -1)
         {
             val footerIndex = data.indexOfArray(headerIndex + 4, Footer)
-            result[1] = footerIndex + 4
+            val dataLength = data[headerIndex + 4]
+            result[1] = footerIndex
 
             if (footerIndex != -1)
             {
                 val dataSize = footerIndex - headerIndex - 4
-                if (dataSize > 0 && dataSize % 5 == 3)
+                if (dataSize - 2 == dataLength.toInt())
                 {
+                    val crcIndex = footerIndex - 1
+                    if (calCRC(data[crcIndex], data.sliceArray(headerIndex + 5 until crcIndex)) == false)
+                    {
+                        result[0] = PROTOCOL_ERROR
+                        result[1] = footerIndex
+                    }
                     return result
                     // return data.sliceArray(headerIndex + 4 until footerIndex)
                 }
                 else
                 {
                     result[0] = PROTOCOL_ERROR
-                    result[1] = footerIndex + 4
+                    result[1] = footerIndex
                     return result
                 }
             }
@@ -80,7 +88,8 @@ object BTDataParser {
 
     fun filterCheck(data: ByteArray, indexArray: IntArray): IntArray
     {
-        val tmpArray = data.sliceArray(indexArray[0] + 4 until indexArray[1])
+        // pass length byte follows after header
+        val tmpArray = data.sliceArray(indexArray[0] + 5 until indexArray[1] - 1)
         val buffer = ByteBuffer.wrap(tmpArray).order(ByteOrder.LITTLE_ENDIAN)
         val numOfElements: Int = (tmpArray.size / 5) + 1
 
@@ -131,6 +140,27 @@ object BTDataParser {
         dc = dc shl 8
         dc = dc shr 8
         return -dc
+    }
+
+    fun calCRC(crcVal: Byte, data: ByteArray): Boolean
+    {
+        var crc = 0
+        val poly = 0x07
+
+        for (b in data) {
+            crc = crc xor (b.toInt() and 0xFF)
+
+            repeat(8) {
+                crc =
+                    if ((crc and 0x80) != 0)
+                        ((crc shl 1) xor poly) and 0xFF
+                    else
+                        (crc shl 1) and 0xFF
+            }
+        }
+
+        if (crc.toByte() == crcVal) return true
+        return false
     }
 
 //    fun convertByteArray(data: ByteArray): Int

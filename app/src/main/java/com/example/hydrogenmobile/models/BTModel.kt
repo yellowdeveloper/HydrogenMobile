@@ -22,9 +22,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import java.util.UUID
-
 class BTModel(private val context: Context) {
-
+    init {
+        Log.d("BTMODEL", "created ${hashCode()}")
+    }
     // Cast SystemService to BluetoothManager type and get adapter
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val adapter = bluetoothManager.adapter
@@ -174,6 +175,30 @@ class BTModel(private val context: Context) {
         awaitClose {
             if (adapter.isEnabled) {
                 scanner?.stopScan(callback)
+            }
+        }
+    }
+
+    // cmd type :: 0xCA (control), 0xFA (filter)
+    fun BTWriteCmd(CmdType: Byte ,CmdVal: Byte) {
+        val gatt = bluetoothGatt ?: return
+
+        val service = gatt?.getService(serviceUUID)
+        val characteristic = service?.getCharacteristic(integerUUID)
+        Log.d("btn", "BTWriteCmd")
+        characteristic?.let {
+            Log.d("btn", "characteristic?.let")
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                gatt.writeCharacteristic(
+                    it,
+                    byteArrayOf( 0x09, 0x0D, 0x09, 0x0D ,CmdType, CmdVal, 0x27, 0x22, 0x27, 0x22),
+                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                )
+            } else {
+                // 구버전 방식
+                it.value = byteArrayOf( 0x09, 0x0D, 0x09, 0x0D ,CmdType, CmdVal, 0x27, 0x22, 0x27, 0x22)
+                it.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                gatt.writeCharacteristic(it)
             }
         }
     }

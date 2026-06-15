@@ -231,7 +231,7 @@ fun defaultControlPanel(modifier: Modifier = Modifier, filterName: String, data:
                     contentDescription = "Graph Logging Button"
                 )
             }
-            Text (text = "LOG",
+            Text (text = "ON/OFF",
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.4f),
