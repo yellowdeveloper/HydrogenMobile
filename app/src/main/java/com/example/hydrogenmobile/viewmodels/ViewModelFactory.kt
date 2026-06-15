@@ -13,6 +13,9 @@ class ViewModelFactory (private val btModel: BTModel) : ViewModelProvider.Factor
         if (modelClass.isAssignableFrom(BTDataViewModel::class.java)) {
             return BTDataViewModel(btModel) as T
         }
+        if (modelClass.isAssignableFrom(BTCmdViewModel::class.java)) {
+            return BTCmdViewModel(btModel) as T
+        }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

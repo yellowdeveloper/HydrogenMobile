@@ -14,6 +14,10 @@
     import com.example.hydrogenmobile.models.BTDataParser.PROTOCOL_ERROR
     import com.example.hydrogenmobile.models.DataStats
     import com.example.hydrogenmobile.models.FilterData
+    import kotlinx.coroutines.delay
+    import kotlinx.coroutines.flow.SharingStarted
+    import kotlinx.coroutines.flow.flow
+    import kotlinx.coroutines.flow.stateIn
     import java.util.LinkedList
     import kotlin.math.sqrt
 
@@ -38,6 +42,19 @@
 
         private val _finalData = MutableStateFlow<FilterData?>(null)
         val finalData: StateFlow<FilterData?> = _finalData.asStateFlow()
+
+        val XTickUpdater = flow {
+            while (true) {
+                emit(System.currentTimeMillis())
+                delay(1000)
+            }
+        }
+
+        val xTickTime = XTickUpdater.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            System.currentTimeMillis()
+        )
 
         init {
             viewModelScope.launch {
@@ -136,5 +153,10 @@
             )
 
             return result
+        }
+
+
+        fun YTickUpdater() {
+
         }
     }

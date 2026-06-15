@@ -63,15 +63,14 @@ import com.example.hydrogenmobile.viewmodels.BTDataViewModel
 import com.example.hydrogenmobile.viewmodels.BTScanViewModel
 import com.example.hydrogenmobile.viewmodels.ViewModelFactory
 import com.example.hydrogenmobile.utils.CircleDrawing
+import com.example.hydrogenmobile.viewmodels.BTCmdViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun MainScreenForm(btModel: BTModel) {
+fun MainScreenForm(btModel: BTModel, btScanViewModel: BTScanViewModel, btDataViewModel: BTDataViewModel, btCmdViewModel: BTCmdViewModel) {
     val focusManager = LocalFocusManager.current
 
-    val viewModel: BTDataViewModel = viewModel(
-        factory = ViewModelFactory(btModel)
-    )
+    val viewModel: BTDataViewModel = btDataViewModel
     val finalData by viewModel.finalData.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -97,7 +96,7 @@ fun MainScreenForm(btModel: BTModel) {
                 .background(color = Color.Black)
                 .addFocusCleaner(focusManager),
             ){
-                HeaderPanel(btModel)
+                HeaderPanel(btModel, btScanViewModel, btCmdViewModel)
             }
 
             // Main Panel Area
@@ -126,7 +125,10 @@ fun MainScreenForm(btModel: BTModel) {
                             .padding(end = 5.dp),
                             filterName = "RAW",
                             data = finalData?.raw,
-                            viewModel.rawBuffer
+                            viewModel.rawBuffer,
+                            onOnOffClick = { },
+                            onSampleClick = { },
+                            0
                         )
                         defaultCard(
                             modifier = Modifier
@@ -135,7 +137,15 @@ fun MainScreenForm(btModel: BTModel) {
                                 .padding(start = 5.dp),
                             filterName = "Low Pass Filter",
                             data = finalData?.lpf,
-                            viewModel.lpfBuffer
+                            viewModel.lpfBuffer,
+                            onOnOffClick = {
+                                if (btCmdViewModel.LpfStat == 0)
+                                    btCmdViewModel.BTEnLowPassFilter()
+                                else
+                                    btCmdViewModel.BTDisLowPassFilter()
+                            },
+                            onSampleClick = { },
+                            0
                         )
                     }
                     Row(
@@ -152,7 +162,18 @@ fun MainScreenForm(btModel: BTModel) {
                                 .padding(end = 5.dp),
                             filterName = "Sample Average Filter",
                             data = finalData?.saf,
-                            viewModel.safBuffer
+                            viewModel.safBuffer,
+                            onOnOffClick = {
+                                if (btCmdViewModel.SafStat == 0)
+                                    btCmdViewModel.BTEn2SampleAverageFilter()
+                                else
+                                    btCmdViewModel.BTDisSampleAverageFilter()
+                            },
+                            onSampleClick = {
+                                if (btCmdViewModel.SafStat > 0)
+                                    btCmdViewModel.BTSAFSampleChange()
+                            },
+                            btCmdViewModel.SAFSamples[btCmdViewModel.SafStat]
                         )
                         defaultCard(
                             modifier = Modifier
@@ -161,7 +182,18 @@ fun MainScreenForm(btModel: BTModel) {
                                 .padding(start = 5.dp),
                             filterName = "Moving Average Filter",
                             data = finalData?.maf,
-                            viewModel.mafBuffer
+                            viewModel.mafBuffer,
+                            onOnOffClick = {
+                                if (btCmdViewModel.MafStat == 0)
+                                    btCmdViewModel.BTEn2MovingAverageFilter()
+                                else
+                                    btCmdViewModel.BTDisMovingAverageFilter()
+                            },
+                            onSampleClick = {
+                                if (btCmdViewModel.MafStat > 0)
+                                    btCmdViewModel.BTMAFSampleChange()
+                            },
+                            btCmdViewModel.MAFSamples[btCmdViewModel.MafStat]
                         )
                     }
                 }
@@ -171,13 +203,11 @@ fun MainScreenForm(btModel: BTModel) {
 }
 
 @Composable
-fun HeaderPanel(btModel: BTModel) {
+fun HeaderPanel(btModel: BTModel, btScanViewModel: BTScanViewModel, btCmdViewModel: BTCmdViewModel) {
     var showScanDialog by remember { mutableStateOf(false) }
 
     // Create Viewmodel with ViewModelFactory
-    val viewModel: BTScanViewModel = viewModel(
-        factory = ViewModelFactory(btModel)
-    )
+    val viewModel: BTScanViewModel = btScanViewModel
     val isConnected by viewModel.isConnected.collectAsState()
 
     val bluetoothEnableLauncher = rememberLauncherForActivityResult(
@@ -262,8 +292,10 @@ fun HeaderPanel(btModel: BTModel) {
 
         IconButton(
             onClick = {
-                btModel.BTWriteCmd(0xCA.toByte(), 0x10)
-                Log.d("btn", "button clicked")
+                if (!btCmdViewModel.isReading)
+                    btCmdViewModel.BTReadStart()
+                else
+                    btCmdViewModel.BTReadStop()
                       },
             modifier = Modifier
                 .padding(5.dp)

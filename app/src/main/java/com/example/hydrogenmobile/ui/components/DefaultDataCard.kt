@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,7 +43,10 @@ fun defaultCard(
     modifier: Modifier = Modifier,
     filterName: String,
     data: DataStats?,
-    history: List<Int>
+    history: List<Int>,
+    onOnOffClick: () -> Unit = {},
+    onSampleClick: () -> Unit = {},
+    sample: Int
 ) {
     // CardArea For Graph Panel
     Column (modifier = modifier) {
@@ -120,7 +125,10 @@ fun defaultCard(
                 modifier = Modifier
                     .fillMaxHeight(),
                 filterName = "${filterName.filter { it.isUpperCase() }}\nCONTROL",
-                data = data
+                data = data,
+                onOnOffClick = onOnOffClick,
+                onSampleClick = onSampleClick,
+                sample = sample
             )
         }
     }
@@ -146,7 +154,12 @@ fun defaultGraphPanel(
 
 // Control Panel
 @Composable
-fun defaultControlPanel(modifier: Modifier = Modifier, filterName: String, data: DataStats?) {
+fun defaultControlPanel(modifier: Modifier = Modifier,
+                        filterName: String,
+                        data: DataStats?,
+                        onOnOffClick: () -> Unit = {},
+                        onSampleClick: () -> Unit = {},
+                        sample: Int) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -198,16 +211,16 @@ fun defaultControlPanel(modifier: Modifier = Modifier, filterName: String, data:
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             IconButton(
-                onClick = { /* 클릭 시 실행할 동작 */ },
+                onClick = { onOnOffClick() },
                 modifier = Modifier
                     .weight(0.6f)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.func_on_off_btn),
-                    contentDescription = "Filter ON/OFF Button"
-                )
+                    Image(
+                        painter = painterResource(id = R.drawable.func_on_off_btn),
+                        contentDescription = "Filter ON/OFF Button"
+                    )
             }
-            Text (text = "GRAPH",
+            Text (text = "ON/OFF",
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.4f),
@@ -222,16 +235,26 @@ fun defaultControlPanel(modifier: Modifier = Modifier, filterName: String, data:
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             IconButton(
-                onClick = { /* 클릭 시 실행할 동작 */ },
+                onClick = { onSampleClick() },
                 modifier = Modifier
                     .weight(0.6f)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.func_on_off_btn),
-                    contentDescription = "Graph Logging Button"
-                )
+                Box (
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.func_on_off_btn),
+                        contentDescription = "Graph Logging Button"
+                    )
+                    Text (text = "$sample",
+                        color = Color.Black,
+                        fontSize = 12.sp,
+                        modifier = Modifier.offset(y = 3.dp),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
-            Text (text = "ON/OFF",
+            Text (text = "SAMPLE",
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.4f),

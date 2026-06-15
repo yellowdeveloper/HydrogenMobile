@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -19,10 +20,14 @@ import com.example.hydrogenmobile.ui.views.MainScreenForm
 import com.example.hydrogenmobile.utils.permission_array
 import com.example.hydrogenmobile.models.BTModel
 import com.example.hydrogenmobile.utils.ApplicationSimulator
+import com.example.hydrogenmobile.viewmodels.BTCmdViewModel
+import com.example.hydrogenmobile.viewmodels.BTDataViewModel
+import com.example.hydrogenmobile.viewmodels.BTScanViewModel
+import com.example.hydrogenmobile.viewmodels.ViewModelFactory
 
 class MainActivity : ComponentActivity() {
     private val btModel by lazy {
-        BTModel(applicationContext)
+        (applicationContext as BTInstance).btModel
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,12 +42,17 @@ class MainActivity : ComponentActivity() {
                     val navController =
                         rememberNavController() // navigation controller for screen switch
 
+                    val factory = ViewModelFactory(btModel)
+                    val btScanViewModel: BTScanViewModel = viewModel(factory = factory)
+                    val btDataViewModel: BTDataViewModel = viewModel(factory = factory)
+                    val btCmdViewModel: BTCmdViewModel = viewModel(factory = factory)
+
                     NavHost(
                         navController = navController,
                         startDestination = "main"
                     ) { // manage screen with navhost
                         composable("main") {
-                            MainScreenForm(btModel)
+                            MainScreenForm(btModel, btScanViewModel, btDataViewModel, btCmdViewModel)
                         }
                     }
                 }
