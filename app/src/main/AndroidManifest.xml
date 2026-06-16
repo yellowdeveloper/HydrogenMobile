@@ -13,6 +13,10 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <!-- Permissions for managing external storage -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACTION_CREATE_DOCUMENT" />
+
     <!--uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" /-->
 
     <application
@@ -21,14 +25,14 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="수소 센서 감시"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.HydrogenMobile">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
+            android:label="수소 센서 감시"
             android:theme="@style/Theme.HydrogenMobile">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

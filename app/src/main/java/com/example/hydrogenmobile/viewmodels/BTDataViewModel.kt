@@ -14,11 +14,14 @@
     import com.example.hydrogenmobile.models.BTDataParser.PROTOCOL_ERROR
     import com.example.hydrogenmobile.models.DataStats
     import com.example.hydrogenmobile.models.FilterData
+    import com.example.hydrogenmobile.utils.AddLogTxt
+    import com.example.hydrogenmobile.utils.isLogging
     import kotlinx.coroutines.delay
     import kotlinx.coroutines.flow.SharingStarted
     import kotlinx.coroutines.flow.flow
     import kotlinx.coroutines.flow.stateIn
-    import java.util.LinkedList
+    import java.time.LocalDateTime
+    import java.time.format.DateTimeFormatter
     import kotlin.math.sqrt
 
 
@@ -110,6 +113,13 @@
             addToBuffer(safBuffer, parsedData[1])
             addToBuffer(lpfBuffer, parsedData[2])
             addToBuffer(mafBuffer, parsedData[3])
+
+            if (isLogging) {
+                val formatter = DateTimeFormatter.ofPattern("yyMMdd_HH:mm:ss:SS")
+                val timeStamp = LocalDateTime.now().format(formatter)
+
+                AddLogTxt("$timeStamp\t${parsedData[0]}\t${parsedData[1]}\t${parsedData[2]}\t${parsedData[3]}\n")
+            }
         }
 
         private fun addToBuffer(list: MutableList<Int>, value: Int) {

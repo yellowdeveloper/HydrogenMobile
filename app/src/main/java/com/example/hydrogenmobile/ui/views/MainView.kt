@@ -11,6 +11,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -63,6 +64,9 @@ import com.example.hydrogenmobile.viewmodels.BTDataViewModel
 import com.example.hydrogenmobile.viewmodels.BTScanViewModel
 import com.example.hydrogenmobile.viewmodels.ViewModelFactory
 import com.example.hydrogenmobile.utils.CircleDrawing
+import com.example.hydrogenmobile.utils.LoggingOff
+import com.example.hydrogenmobile.utils.LoggingOn
+import com.example.hydrogenmobile.utils.isLogging
 import com.example.hydrogenmobile.viewmodels.BTCmdViewModel
 import kotlinx.coroutines.delay
 
@@ -145,7 +149,7 @@ fun MainScreenForm(btModel: BTModel, btScanViewModel: BTScanViewModel, btDataVie
                                     btCmdViewModel.BTDisLowPassFilter()
                             },
                             onSampleClick = { },
-                            0
+                            btCmdViewModel.LpfStat
                         )
                     }
                     Row(
@@ -209,6 +213,7 @@ fun HeaderPanel(btModel: BTModel, btScanViewModel: BTScanViewModel, btCmdViewMod
     // Create Viewmodel with ViewModelFactory
     val viewModel: BTScanViewModel = btScanViewModel
     val isConnected by viewModel.isConnected.collectAsState()
+    val currentContent = LocalContext.current
 
     val bluetoothEnableLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -261,7 +266,29 @@ fun HeaderPanel(btModel: BTModel, btScanViewModel: BTScanViewModel, btCmdViewMod
             ),
             shape = RoundedCornerShape(3.dp),
         )
-        Spacer(modifier = Modifier.weight(0.6f))
+        Spacer(modifier = Modifier.weight(0.4f))
+
+        val _painter = if (isLogging) {
+            painterResource(R.drawable.memo_red)
+        } else {
+            painterResource(R.drawable.memo)
+        }
+
+        Image(
+            painter = _painter,
+            contentDescription = "Logging Button",
+            modifier = Modifier
+                .padding(5.dp)
+                .align(Alignment.CenterVertically)
+                .clickable {
+                    if (!isLogging)
+                    {
+                        LoggingOn()
+                    }
+                    else LoggingOff(currentContent)
+                }
+        )
+
         IconButton(
             onClick = {
                 if(!isConnected) showScanDialog = true
