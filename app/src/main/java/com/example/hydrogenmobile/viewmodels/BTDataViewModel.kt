@@ -32,6 +32,7 @@
         // ...Buffer = Buffer to Store Recent Data for Stat Calculation
         private val _windowSize = MutableStateFlow(100)
         val windowSize: StateFlow<Int> = _windowSize.asStateFlow()
+        private val logFormatter = DateTimeFormatter.ofPattern("yyMMdd_HH:mm:ss:SS")
 
         val rawBuffer = List(_windowSize.value) { 0 }.toMutableStateList()
         val lpfBuffer = List(_windowSize.value) { 0 }.toMutableStateList()
@@ -115,8 +116,7 @@
             addToBuffer(mafBuffer, parsedData[3])
 
             if (isLogging) {
-                val formatter = DateTimeFormatter.ofPattern("yyMMdd_HH:mm:ss:SS")
-                val timeStamp = LocalDateTime.now().format(formatter)
+                val timeStamp = LocalDateTime.now().format(logFormatter)
 
                 AddLogTxt("$timeStamp\t${parsedData[0]}\t${parsedData[1]}\t${parsedData[2]}\t${parsedData[3]}\n")
             }

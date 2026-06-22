@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -54,8 +55,8 @@ fun defaultCard(
     sample: Int
 ) {
     val avg = formatNumber(data?.average)
-    val min = formatNumber(data?.min)
-    val max = formatNumber(data?.max)
+    val min = data?.average?.minus(data.min).toString()
+    val max = data?.max?.minus(data.average).toString()
 
     // CardArea For Graph Panel
     Column (modifier = modifier) {
@@ -83,30 +84,34 @@ fun defaultCard(
                 // .topBorder(1.dp, Color.LightGray)
             ) {
                 Row() {
-                    Column() {
-                        Text (text = max,
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(0.1f)
+                    ) {
+                        Text (text = "+$max",
                             modifier = Modifier
-                                .fillMaxHeight()
+                                .fillMaxWidth()
                                 .weight(0.04f)
-                                .padding(0.dp),
+                                .padding(top = 10.dp),
                             color = Color.Black,
                             textAlign = TextAlign.Center,
                             fontSize = 12.sp
                         )
                         Text (text = avg,
                             modifier = Modifier
-                                .fillMaxHeight()
+                                .fillMaxWidth()
                                 .weight(0.04f)
-                                .padding(0.dp),
+                                .padding(top = 10.dp),
                             color = Color.Black,
                             textAlign = TextAlign.Center,
                             fontSize = 12.sp
                         )
-                        Text (text = min,
+                        Text (text = "-$min",
                             modifier = Modifier
-                                .fillMaxHeight()
+                                .fillMaxWidth()
                                 .weight(0.04f)
-                                .padding(0.dp),
+                                .padding(top = 10.dp),
                             color = Color.Black,
                             textAlign = TextAlign.Center,
                             fontSize = 12.sp
@@ -115,7 +120,7 @@ fun defaultCard(
 
                     Column(modifier = Modifier
                         .fillMaxHeight()
-                        .weight(0.96f)
+                        .weight(0.9f)
                     ) {
                         defaultGraphPanel(
                             modifier = Modifier
@@ -128,34 +133,13 @@ fun defaultCard(
                             FilterName = filterName,
                             history = history
                         )
-                        Row(){
-                            Text (text = "0",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(0.11f)
-                                    .padding(bottom = 5.dp, start = 10.dp),
-                                color = Color.Black,
-                                textAlign = TextAlign.Left,
-                                fontSize = 12.sp
-                            )
-                            Text (text = "50",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(0.11f)
-                                    .padding(bottom = 5.dp, end = 10.dp),
-                                color = Color.Black,
-                                textAlign = TextAlign.Center,
-                                fontSize = 12.sp
-                            )
-                            Text (text = "100",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(0.11f)
-                                    .padding(bottom = 5.dp, end = 20.dp),
-                                color = Color.Black,
-                                textAlign = TextAlign.Right,
-                                fontSize = 12.sp
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween // 0, 50, 100을 균등 간격으로 자동 배치
+                        ) {
+                            Text (text = "0", color = Color.Black, fontSize = 12.sp)
+                            Text (text = "50", color = Color.Black, fontSize = 12.sp)
+                            Text (text = "100", color = Color.Black, fontSize = 12.sp)
                         }
                     }
                 }
