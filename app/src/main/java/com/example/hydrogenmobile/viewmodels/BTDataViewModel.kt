@@ -164,9 +164,4 @@
 
             return result
         }
-
-
-        fun YTickUpdater() {
-
-        }
     }

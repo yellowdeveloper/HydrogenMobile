@@ -1,9 +1,13 @@
 package com.example.hydrogenmobile.viewmodels
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.hydrogenmobile.models.BTModel
 
 class BTCmdViewModel(private val context: BTModel) : ViewModel() {
+    var showCmdPanel by mutableStateOf(false)
     var isReading = false
     var LpfStat = 0
     var SafStat = 0
@@ -63,5 +67,10 @@ class BTCmdViewModel(private val context: BTModel) : ViewModel() {
     fun BTDisMovingAverageFilter() {
         MafStat = 0
         context.BTWriteCmd(0xFD.toByte(), MAFCmds[MafStat])
+    }
+
+    fun WriteExtraCmds(cmd: Byte) {
+        MafStat = 0
+        context.BTWriteCmd(0xCA.toByte(), cmd)
     }
 }

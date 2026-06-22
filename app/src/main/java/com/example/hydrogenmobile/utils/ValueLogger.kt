@@ -16,14 +16,14 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 var isLogging by mutableStateOf(false)
-var stringToWrite: String = ""
+private val logBuilder = java.lang.StringBuilder()
 
 fun LoggingOn() {
     isLogging = true
-    stringToWrite = "date/time\traw\tSAF\tLPF\tMAF\n"
+    logBuilder.append("date/time\traw\tSAF\tLPF\tMAF\n")
 }
 
-fun saveLog(context: Context): Boolean {
+fun saveLog(context: Context, dataToWrite:String): Boolean {
     val formatter = DateTimeFormatter.ofPattern("yyMMdd_HHmmss")
     val timeStamp = LocalDateTime.now().format(formatter)
     val fileName = "Log$timeStamp.tsv"
@@ -42,7 +42,7 @@ fun saveLog(context: Context): Boolean {
 
     return try {
         context.contentResolver.openOutputStream(uri)?.use { stream ->
-            stream.write(stringToWrite.toByteArray())
+            stream.write(dataToWrite.toByteArray())
         }
         true
     }catch (e:Exception) {
@@ -51,19 +51,21 @@ fun saveLog(context: Context): Boolean {
 }
 
 fun AddLogTxt(data: String) {
-    stringToWrite = stringToWrite + data
+    logBuilder.append(data)
 }
 
 fun LoggingOff(context: Context) {
-    stringToWrite = stringToWrite +
+    logBuilder.append(
             "\nAVG\t=AVERAGE(B2:INDEX(B:B, ROW()-2))\t=AVERAGE(C2:INDEX(C:C, ROW()-2))\t=AVERAGE(D2:INDEX(D:D, ROW()-2))\t=AVERAGE(E2:INDEX(E:E, ROW()-2))" +
             "\nMIN\t=MIN(B2:INDEX(B:B, ROW()-3))\t=MIN(C2:INDEX(C:C, ROW()-3))\t=MIN(D2:INDEX(D:D, ROW()-3))\t=MIN(E2:INDEX(E:E, ROW()-3))" +
             "\nMAX\t=MAX(B2:INDEX(B:B, ROW()-4))\t=MAX(C2:INDEX(C:C, ROW()-4))\t=MAX(D2:INDEX(D:D, ROW()-4))\t=MAX(E2:INDEX(E:E, ROW()-4))" +
             "\nSTDEV\t=STDEV(B2:INDEX(B:B, ROW()-5))\t=STDEV(C2:INDEX(C:C, ROW()-5))\t=STDEV(D2:INDEX(D:D, ROW()-5))\t=STDEV(E2:INDEX(E:E, ROW()-5))" +
             "\nMIN-MAX DIFF\t=INDEX(B:B, ROW()-2)-INDEX(B:B, ROW()-3)\t=INDEX(C:C, ROW()-2)-INDEX(C:C, ROW()-3)\t=INDEX(D:D, ROW()-2)-INDEX(D:D, ROW()-3)\t=INDEX(E:E, ROW()-2)-INDEX(E:E, ROW()-3)"
+    )
 
-    saveLog(context)
+    val finalData = logBuilder.toString()
+    saveLog(context, finalData)
 
-    stringToWrite = ""
+    logBuilder.clear()
     isLogging = false
 }

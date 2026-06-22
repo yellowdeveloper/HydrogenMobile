@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -34,8 +37,10 @@ import com.example.hydrogenmobile.utils.DrawGraph
 import com.example.hydrogenmobile.utils.DrawRectangle
 import com.example.hydrogenmobile.utils.leftBorder
 import com.example.hydrogenmobile.utils.bottomBorder
+import com.example.hydrogenmobile.utils.formatNumber
 import com.example.hydrogenmobile.utils.rightBorder
 import com.example.hydrogenmobile.utils.topBorder
+import com.example.hydrogenmobile.viewmodels.BTCmdViewModel
 
 // Data Card
 @Composable
@@ -48,6 +53,10 @@ fun defaultCard(
     onSampleClick: () -> Unit = {},
     sample: Int
 ) {
+    val avg = formatNumber(data?.average)
+    val min = formatNumber(data?.min)
+    val max = formatNumber(data?.max)
+
     // CardArea For Graph Panel
     Column (modifier = modifier) {
         Card(modifier = Modifier
@@ -65,7 +74,8 @@ fun defaultCard(
         ) {
             Text (text = filterName,
                 modifier = Modifier.padding(start = 10.dp, top = 5.dp),
-                color = Color.Black
+                color = Color.Black,
+                fontWeight = FontWeight.Bold
             )
             Box(modifier = Modifier
                 .fillMaxSize()
@@ -73,15 +83,36 @@ fun defaultCard(
                 // .topBorder(1.dp, Color.LightGray)
             ) {
                 Row() {
-                    Text (text = "\nY\nT\nI\nC\nK\nS",
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .weight(0.04f)
-                            .padding(0.dp),
-                        color = Color.Black,
-                        textAlign = TextAlign.Center,
-                        fontSize = 12.sp
-                    )
+                    Column() {
+                        Text (text = max,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(0.04f)
+                                .padding(0.dp),
+                            color = Color.Black,
+                            textAlign = TextAlign.Center,
+                            fontSize = 12.sp
+                        )
+                        Text (text = avg,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(0.04f)
+                                .padding(0.dp),
+                            color = Color.Black,
+                            textAlign = TextAlign.Center,
+                            fontSize = 12.sp
+                        )
+                        Text (text = min,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(0.04f)
+                                .padding(0.dp),
+                            color = Color.Black,
+                            textAlign = TextAlign.Center,
+                            fontSize = 12.sp
+                        )
+                    }
+
                     Column(modifier = Modifier
                         .fillMaxHeight()
                         .weight(0.96f)
@@ -97,15 +128,35 @@ fun defaultCard(
                             FilterName = filterName,
                             history = history
                         )
-                        Text (text = "XTICKS",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(0.11f)
-                                .padding(bottom = 5.dp),
-                            color = Color.Black,
-                            textAlign = TextAlign.Center,
-                            fontSize = 12.sp
-                        )
+                        Row(){
+                            Text (text = "0",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.11f)
+                                    .padding(bottom = 5.dp, start = 10.dp),
+                                color = Color.Black,
+                                textAlign = TextAlign.Left,
+                                fontSize = 12.sp
+                            )
+                            Text (text = "50",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.11f)
+                                    .padding(bottom = 5.dp, end = 10.dp),
+                                color = Color.Black,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                            Text (text = "100",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.11f)
+                                    .padding(bottom = 5.dp, end = 20.dp),
+                                color = Color.Black,
+                                textAlign = TextAlign.Right,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
             }
@@ -323,6 +374,51 @@ fun ControlValueComponents(
             color = Color.Black,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+@Composable
+fun CommandPanel(btCmdViewModel: BTCmdViewModel) {
+    Box(modifier = Modifier
+        .padding(96.dp)
+        .fillMaxSize()
+        .focusable()
+        .background(Color.DarkGray.copy(alpha = 0.5f),
+            shape = RoundedCornerShape(16.dp))
+    ){
+        Column() {
+            Row() {
+                Text(
+                    text = "Set Gain x1 : 0x30",
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .clickable(
+                            onClick = { btCmdViewModel.WriteExtraCmds(0x30.toByte()) }
+                        ),
+                    color = Color.White,
+                )
+
+                Text(
+                    text = "Set Gain x2 : 0x32",
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .clickable(
+                            onClick = { btCmdViewModel.WriteExtraCmds(0x32.toByte()) }
+                        ),
+                    color = Color.White,
+                )
+
+                Text(
+                    text = "Set Gain x4 : 0x34",
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .clickable(
+                            onClick = { btCmdViewModel.WriteExtraCmds(0x34.toByte()) }
+                        ),
+                    color = Color.White,
+                )
+            }
+        }
     }
 }
 

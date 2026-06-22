@@ -7,13 +7,13 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,12 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,29 +35,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hydrogenmobile.ui.components.BTScanDialog
 import com.example.hydrogenmobile.R
 import com.example.hydrogenmobile.models.BTModel
 import com.example.hydrogenmobile.models.BtUiEvent
+import com.example.hydrogenmobile.ui.components.CommandPanel
 import com.example.hydrogenmobile.ui.components.defaultCard
 import com.example.hydrogenmobile.viewmodels.BTDataViewModel
 import com.example.hydrogenmobile.viewmodels.BTScanViewModel
-import com.example.hydrogenmobile.viewmodels.ViewModelFactory
 import com.example.hydrogenmobile.utils.CircleDrawing
 import com.example.hydrogenmobile.utils.LoggingOff
 import com.example.hydrogenmobile.utils.LoggingOn
@@ -204,6 +193,7 @@ fun MainScreenForm(btModel: BTModel, btScanViewModel: BTScanViewModel, btDataVie
             }
         }
     }
+    if (btCmdViewModel.showCmdPanel) CommandPanel(btCmdViewModel)
 }
 
 @Composable
@@ -240,32 +230,20 @@ fun HeaderPanel(btModel: BTModel, btScanViewModel: BTScanViewModel, btCmdViewMod
         }
     }
 
-    Row {
+    Row( verticalAlignment = Alignment.CenterVertically )
+    {
         Image(
             modifier = Modifier.padding(3.dp).align(Alignment.CenterVertically),
             painter = painterResource(id = R.drawable.fyd_logo_trans),
             contentDescription = "MainLogo"
         )
         Spacer(modifier = Modifier.weight(0.4f))
-        Text(text = "Send Command: ",
-            modifier = Modifier.align(Alignment.CenterVertically),
-            color = Color.White
-        )
-        OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            modifier = Modifier
-                .padding(5.dp, 10.dp, 5.dp, 10.dp)
-                .align(Alignment.CenterVertically),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color(0xFFF0F0F0),
 
-                focusedBorderColor = Color.Red,
-                unfocusedBorderColor = Color.Gray
-            ),
-            shape = RoundedCornerShape(3.dp),
-        )
+        customTextBox("Send Command", {
+            if(!btCmdViewModel.showCmdPanel) btCmdViewModel.showCmdPanel = true
+            else btCmdViewModel.showCmdPanel = false
+        })
+
         Spacer(modifier = Modifier.weight(0.4f))
 
         val _painter = if (isLogging) {
@@ -348,5 +326,34 @@ fun Modifier.addFocusCleaner(focusManager: FocusManager): Modifier {
         detectTapGestures(onTap = {
             focusManager.clearFocus()
         })
+    }
+}
+
+@Composable
+fun customTextBox(
+    content: String,
+    onClick: (() -> Unit)
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val nowColor =
+        if (isPressed) Color.Red
+        else Color.White
+
+    Box(
+        modifier = Modifier
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = content,
+            color = nowColor,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
